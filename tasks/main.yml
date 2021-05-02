@@ -1,0 +1,50 @@
+---
+- name: Install packages
+  apt:
+    name: "{{ packages }}"
+    state: latest
+    dpkg_options: 'force-confnew,force-confdef'
+    autoclean: yes
+    autoremove: yes
+    update_cache: yes
+    cache_valid_time: 3600
+  vars:
+    packages:
+    - curl
+    - unzip
+
+- name: extract latest version number
+  block:
+
+  - name: fetch latest lego version
+    shell: curl -s -o /dev/null -I -w "%{redirect_url}\n" https://github.com/go-acme/lego/releases/latest | grep -oP "[0-9]+(\.[0-9]+)+$"
+    args:
+      executable: /bin/bash
+    register: latest_lego_version
+
+  - name: set lego_version
+    set_fact:
+      lego_version: "{{ latest_lego_version.stdout }}"
+
+  when: lego_version == "latest"
+
+- name: Check lego version
+  shell: "lego --version 2>&1 | grep {{ lego_version }}"
+  failed_when: false
+  changed_when: false
+  register: lego_versions_match
+
+- include: download.yml
+  when: lego_versions_match.rc != 0
+
+- name: Copy lego to /usr/local/bin/lego
+  copy:
+    src: /tmp/lego
+    dest: "/usr/local/bin"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+  when: lego_versions_match.rc != 0
+
+...

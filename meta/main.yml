@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  role_name: go_acme_lego
+  author: andrelohmann
+  description: ansible galaxy role to install go-acme/lego cli
+  company: smartformer UG
+
+  license: MIT
+
+  min_ansible_version: 2.7
+
+  platforms:
+    - name: Ubuntu
+      versions:
+      - xenial
+      - bionic
+      - focal
+
+  galaxy_tags:
+  - go-acme/lego
+
+...
